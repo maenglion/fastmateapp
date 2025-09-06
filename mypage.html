@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fastmate - 마이페이지</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json?v=2025-09-06">
+      <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script defer src="/firebase-init.js?v=2025.09.06-v8"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+        :root {
+            color-scheme: light; 
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --text-light: #777;
+            --border-color: #e0e0e0;
+            --primary-color: #1c8e3e;
+            --primary-hover: #156a2f;
+            --primary-light: #f0f8f2;
+            --chart-line-color: #7FE89B;
+            --chart-bubble-bg: #C8F5D4;
+           --gauge-start-color: #ffd400; 
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+       .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 제목을 중앙에 배치 */
+    position: relative; /* 홈 버튼의 위치 기준점 */
+    padding: 15px 10px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 25px;
+}
+
+        .main-title {
+            text-align: center;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.6rem;
+            margin: 0;
+        }
+
+        .home-btn {
+    position: absolute; /* 헤더의 왼쪽 끝에 배치 */
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%); /* 수직 중앙 정렬 */
+    
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%; /* 동그란 배경 효과 */
+    transition: background-color 0.2s;
+}
+
+.home-btn:hover {
+    background-color: #f0f2f5; /* 마우스를 올렸을 때 배경색 */
+}
+
+.home-btn svg {
+    width: 26px;
+    height: 26px;
+    stroke: #333; /* 아이콘 색상 */
+    stroke-width: 2;
+}
+    
+/* 이 코드는 그대로 둡니다 */
+.main-title {
+    text-align: center;
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.6rem;
+    margin: 0;
+}
+
+
+.chart-header select {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background-color: #f8f9fa; /* [추가] 라이트 모드 배경색 */
+    color: var(--text-color);   /* [추가] 라이트 모드 글씨색 */
+}
+
+        /* --- 프로필 카드 스타일 시작 --- */
+        .profile-card {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .profile-avatar svg {
+            width: 32px;
+            height: 32px;
+            stroke: var(--primary-color);
+            stroke-width: 2;
+        }
+        .profile-info h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        .profile-info p {
+            margin: 4px 0 0;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        .profile-details {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+        .profile-details h3 {
+            margin: 0 0 15px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        .goals-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+      
+.goal-tag {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* .logout-icon-btn 관련 규칙들을 찾아 아래 코드로 교체해주세요. */
+
+.logout-icon-btn {
+    position: absolute;
+    /* [수정] 오른쪽 위치를 카드 내부 여백과 유사하게 조정합니다. */
+    right: 35px; 
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none; /* [확인] 테두리가 없는 상태입니다. */
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.logout-icon-btn svg {
+    width: 24px;
+    height: 24px;
+    /* [수정] 라이트 모드일 때의 흐린 회색 아이콘 */
+    stroke: #adb5bd; 
+}
+
+.logout-icon-btn:hover {
+    background-color: #f0f0f0;
+}
+
+
+
+        /* --- 프로필 카드 스타일 끝 --- */
+
+       
+/* 1. .history-item 규칙을 찾아 아래 코드로 교체 */
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* [수정] flex-start -> center 로 변경하여 세로 중앙 정렬 */
+    padding: 15px 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* 2. .history-actions 규칙을 찾아 아래 코드로 교체 */
+.history-actions {
+    display: flex;
+    align-items: center; /* [수정] X버튼과 글씨를 세로 중앙 정렬합니다. */
+    gap: 15px;
+    text-align: right;
+}
+
+/* .delete-btn 규칙을 찾아 아래 코드로 교체해주세요 */
+.delete-btn {
+    background: #e9ecef;
+    color: #acacac;
+    border: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    /* [수정] flexbox를 이용한 완벽한 중앙 정렬 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* 기존 line-height와의 충돌 방지 */
+}
+
+.delete-btn:hover {
+    background: #c53030;
+    color: white;
+}
+/* 3. .history-percentage 규칙을 찾아 아래 코드로 교체 */
+.history-percentage {
+    font-size: 1.2rem;
+    font-weight: 700; /* [수정] 글씨를 굵게 만듭니다. */
+}
+
+       
+        .history-section h2 {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            min-height: 100px;
+        }
+
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        .history-info .duration, .history-info .type {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+        .history-info .period, .history-info .details {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+        .history-calories {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        .history-calories .unit {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        .pagination button {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .pagination button:hover:not(:disabled) {
+            background-color: #f0f0f0;
+        }
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pagination span {
+            font-weight: 500;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-light);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease-in-out;
+            position: relative; /* 점(dot)의 위치 기준점 */
+
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 700;
+        }
+
+
+
+
+
+/* --- 달성률(%) 색상 정의 (수정된 최종본) --- */
+.history-actions .history-percentage.percentage-high { color: #1c8e3e; } 
+.history-actions .history-percentage.percentage-mid { color: #1c8e3e; } 
+.history-actions .history-percentage.percentage-low { color: #759286; } 
+.history-actions .history-percentage.percentage-over-100 { color: #fc9004; }
+
+
+
+        /* 'New' 알림 점 스타일 */
+.tab-button.new-indicator::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 4x; /* 4px보다 조금 더 잘보이게 6px로 조정 */
+    height: 4px;
+    background-color:#ffd400; /* 정의된 노란색 */
+    border-radius: 50%;
+    box-shadow: 0 0 3px var(--gauge-start-color);
+}
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+        
+        .chart-info {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .chart-header select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 40vh;
+            max-height: 400px;
+        }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        /* mypage.html의 <style> 안에 추가 */
+
+
+
+
+/* mypage.html의 <style> 태그 안에 추가 */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+        --text-color: #e0e0e0;
+        --text-light: #888;
+        --border-color: #333;
+        --primary-light: #2c3e32;
+         --gauge-start-color: #ffd400; /* 다크모드에서도 노란색 변수 정의 */
+    }
+    .mypage-title, .onboarding-reasons-title {
+        color: var(--text-light);
+    }
+    .profile-details h3, .section-title {
+    color: var(--text-light);
+}
+
+/* --- 달성률(%) 색상 정의 (수정된 최종본) --- */
+.history-actions .history-percentage.percentage-high { color: var(--primary-color); }
+.history-actions .history-percentage.percentage-mid { color: #a7922e; }
+.history-actions .history-percentage.percentage-low { color: #628375; }
+.history-actions .history-percentage.percentage-over-100 { color: #91d8a4; }
+
+    /* --- 기본 요소 색상 변경 --- */
+    .home-btn svg {
+        stroke: var(--text-color);
+    }
+    .home-btn:hover {
+        background-color: #333;
+    }
+    .pagination button:hover:not(:disabled) {
+        background-color: #333;
+    }
+
+    /* --- 프로필 카드 --- */
+    .profile-avatar {
+        background-color: var(--primary-light);
+    }
+    .goal-tag {
+        background-color: var(--primary-light);
+        color: var(--primary-color);
+    }
+     /* [추가] 닉네임 버튼 클릭 시 애니메이션 효과 */
+    .user-chip {
+        /* 기존 스타일은 그대로 두고 아래 transition만 추가하거나 확인 */
+        transition: background-color 0.2s;
+    }
+    .user-chip:active {
+        background-color: rgba(255, 212, 0, 0.1); /* 살짝 노란색 (var(--gauge-start-color) 기반) */
+    }
+
+
+
+    /* --- 차트 섹션 --- */
+    .chart-header select {
+        background-color: #2a2a2a;
+        color: var(--text-color);
+        border-color: #444;
+    }
+
+    /* --- 기록 목록 --- */
+    .delete-btn {
+        background: #858383;
+        color: #d4d4d4;
+    }
+    .delete-btn:hover {
+        background: #c53030;
+        color: white;
+    }
+ 
+    .logout-icon-btn svg {
+        /* [수정] 다크 모드일 때의 더 어둡고 흐린 회색 아이콘 */
+        stroke: #555;
+    }
+    .logout-icon-btn:hover {
+        background-color: #333;
+    }
+}
+
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+      <header class="page-header">
+    <button id="homeBtn" class="home-btn" title="홈으로 돌아가기">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    </button>
+    <h1 class="main-title">마이페이지</h1>
+    <button id="logoutBtn" class="logout-icon-btn" title="로그아웃">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+    </button>
+</header>
+
+<div class="card profile-card">
+    <div class="profile-header">
+        <div class="profile-info">
+            <h2 id="pfNickname">-</h2>
+            <p id="pfEmail">-</p>
+        </div>
+    </div> <div class="profile-details">
+        <h3>나의 가입 목적</h3>
+        <div id="pfGoals" class="goals-container">
+            </div>
+        </div>
+</div>
+      
+        <div class="card">
+            <section class="history-section">
+                <h2>나의 단식 기록</h2>
+                <ul class="history-list" id="fastingHistoryList"></ul>
+                <div class="pagination" id="fastingPaginationControls"></div>
+            </section>
+        </div>
+
+        <div class="card">
+            <section class="chart-section">
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="weight">체중</button>
+                    <button class="tab-button" data-tab="bloodSugar">혈당</button>
+                    <button class="tab-button" data-tab="ketone">케톤</button>
+                </div>
+
+                <div class="chart-header">
+                    <p class="chart-info">💡 손가락으로 확대/축소, 좌우로 밀어보세요.</p>
+                    <select id="dateRangeSelector">
+                        <option value="30">최근 1개월</option>
+                        <option value="90">최근 3개월</option>
+                        <option value="180">최근 6개월</option>
+                        <option value="365">최근 1년</option>
+                        <option value="all">전체</option>
+                    </select>
+                </div>
+
+                <div id="weightContent" class="tab-content active">
+                    <div class="chart-container">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                </div>
+                <div id="bloodSugarContent" class="tab-content">
+                    <div class="chart-container">
+                        <canvas id="bloodSugarChart"></canvas>
+                    </div>
+                </div>
+                <div id="ketoneContent" class="tab-content">
+                    <div class="chart-container">
+                        <canvas id="ketoneChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="card">
+            <section class="history-section">
+                <h2>나의 운동 기록</h2>
+                <ul class="history-list" id="exerciseHistoryList"></ul>
+                <div class="pagination" id="exercisePaginationControls"></div>
+            </section>
+        </div>
+   </div> 
+   <footer class="app-footer" style="margin-top: 20px; text-align: center;">
+        <a href="./privacy.html" style="font-size: 0.8rem; color: var(--text-light); text-decoration: none;">개인정보처리방침</a>
+        <p style="font-size: 0.8rem; color: var(--text-light); margin: 5px 0;">© 2025 2e-studio. All rights reserved.</p>
+    </footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // 1. 전역 도구 및 변수 준비
+        const auth = window.fastmateApp.auth;
+        const db = window.fastmateApp.db;
+        const getUserDoc = window.fastmateApp.getUserDoc;
+        const signOutUser = window.fastmateApp.signOutUser;
+        
+        let currentUser = null;
+        let allCharts = {};
+        let allData = {};
+        let fastingCurrentPage = 1;
+        let exerciseCurrentPage = 1;
+        const itemsPerPage = 7;
+
+        // 2. DOM 요소 캐시
+        const pfNickname = document.getElementById('pfNickname');
+        const pfEmail = document.getElementById('pfEmail');
+        const pfGoals = document.getElementById('pfGoals');
+        const homeBtn = document.getElementById('homeBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const fastingHistoryList = document.getElementById('fastingHistoryList');
+        const fastingPaginationControls = document.getElementById('fastingPaginationControls');
+        const exerciseHistoryList = document.getElementById('exerciseHistoryList');
+        const exercisePaginationControls = document.getElementById('exercisePaginationControls');
+        const tabs = document.querySelectorAll('.tab-button');
+        const dateRangeSelector = document.getElementById('dateRangeSelector');
+
+        // 3. 데이터 조회 함수
+        async function fetchHistory(collectionName, orderByField = 'date') {
+            if (!currentUser) return [];
+            try {
+                const snap = await db.collection('users').doc(currentUser.uid).collection(collectionName).orderBy(orderByField, 'desc').limit(200).get();
+                return snap.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id, ...data,
+                        date: data.date?.toDate?.(), startTime: data.startTime?.toDate?.(),
+                        endTime: data.endTime?.toDate?.(), createdAt: data.createdAt?.toDate?.()
+                    };
+                });
+            } catch (error) { console.error(`${collectionName} 데이터 로딩 실패:`, error); return []; }
+        }
+
+        async function deleteFastingRecord(docId) {
+            if (!currentUser || !docId) return;
+            if (confirm('이 단식 기록을 정말로 삭제하시겠습니까?')) {
+                try {
+                    await db.collection('users').doc(currentUser.uid).collection('fastingHistory').doc(docId).delete();
+                    allData.fasting = allData.fasting.filter(item => item.id !== docId);
+                    renderFastingHistory();
+                    alert('기록이 삭제되었습니다.');
+                } catch (error) { alert('기록 삭제에 실패했습니다.'); }
+            }
+        }
+
+        // 4. 화면 렌더링 함수 (UI 업데이트)
+        function renderProfileCard() {
+    // 이 함수는 onAuthStateChanged에서 currentUser와 allData가
+    // 준비된 후에 호출되므로 안전합니다.
+    if (!currentUser || !allData.profile) return;
+    
+    const profile = allData.profile;
+    const user = currentUser; // firebase.auth().currentUser 대신 안전한 currentUser를 사용합니다.
+
+    const nickname = profile.nickname || profile.displayName || user.displayName || '사용자';
+    if (pfNickname) pfNickname.textContent = `${nickname}님`;
+    if (pfEmail) pfEmail.textContent = user.email || '이메일 정보 없음';
+    
+    // '가입 목적' 렌더링 로직 (사용자님 코드)
+    const goals = profile.onboarding?.reasons || [];
+    if (pfGoals) {
+        pfGoals.innerHTML = '';
+        if (goals.length > 0) {
+            goals.forEach(goalText => {
+                const tag = document.createElement('div');
+                tag.className = 'goal-tag';
+                tag.textContent = goalText;
+                pfGoals.appendChild(tag);
+            });
+        } else {
+            pfGoals.textContent = '설정된 목표가 없습니다.';
+        }
+    }
+}
+
+        function renderPagination(container, currentPage, totalPages, onPageChange) {
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+            container.innerHTML = `<button class="prev-page" ${currentPage === 1 ? 'disabled' : ''}>&lt;</button><span>${currentPage}/${totalPages}</span><button class="next-page" ${currentPage === totalPages ? 'disabled' : ''}>&gt;</button>`;
+            container.querySelector('.prev-page')?.addEventListener('click', () => onPageChange(currentPage - 1));
+            container.querySelector('.next-page')?.addEventListener('click', () => onPageChange(currentPage + 1));
+        }
+
+        function renderHistory(listEl, paginationEl, data, page, renderItemFn, onPageChange) {
+            listEl.innerHTML = '';
+            if (!data || data.length === 0) {
+                listEl.innerHTML = '<li style="text-align:center;color:var(--text-light);padding:20px 0;">기록이 없습니다.</li>';
+                paginationEl.innerHTML = ''; return;
+            }
+            const totalPages = Math.ceil(data.length / itemsPerPage);
+            const pageItems = data.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+            pageItems.forEach(item => listEl.appendChild(renderItemFn(item)));
+            renderPagination(paginationEl, page, totalPages, onPageChange);
+        }
+
+        function renderFastingHistory() {
+            renderHistory(fastingHistoryList, fastingPaginationControls, allData.fasting, fastingCurrentPage, (item) => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.dataset.docId = item.id;
+                const hours = Math.floor(item.actualDurationHours);
+                const minutes = Math.round((item.actualDurationHours - hours) * 60);
+                const percentage = item.targetHours > 0 ? Math.round((item.actualDurationHours / item.targetHours) * 100) : 0;
+                const format = (d) => `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+                let percentageClass = 'percentage-mid';
+                if (percentage > 100) percentageClass = 'percentage-over-100';
+                else if (percentage >= 70) percentageClass = 'percentage-high';
+                else if (percentage <= 30) percentageClass = 'percentage-low';
+                li.innerHTML = `<div class="history-info"><div class="duration">${hours}시간 ${minutes}분</div><div class="period">${format(item.startTime)}~${format(item.endTime)}</div></div><div class="history-actions"><div class="history-percentage ${percentageClass}">${percentage}%</div><button class="delete-btn" title="기록 삭제">×</button></div>`;
+                return li;
+            }, (newPage) => { fastingCurrentPage = newPage; renderFastingHistory(); });
+        }
+
+        function renderExerciseHistory() {
+             renderHistory(exerciseHistoryList, exercisePaginationControls, allData.exercise, exerciseCurrentPage, (item) => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                const format = (d) => `${d.getMonth()+1}/${d.getDate()}`;
+                li.innerHTML = `<div class="history-info"><div class="type">${item.type}</div><div class="details">${format(item.date)} / ${item.duration}분</div></div><div class="history-calories">${item.calories || 0} <span class="unit">kcal</span></div>`;
+                return li;
+            }, (newPage) => { exerciseCurrentPage = newPage; renderExerciseHistory(); });
+        }
+
+        // 5. 차트 관련 함수
+        const newIconPlugin = {
+            id: 'newIconPlugin',
+            afterDraw: (chart) => {
+                const ctx = chart.ctx;
+                const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((element, index) => {
+                        const dataPoint = dataset.data[index];
+                        if (dataPoint.createdAt && dataPoint.createdAt > sixHoursAgo) {
+                            const { x, y } = element.getProps(['x', 'y'], true);
+                            ctx.save(); ctx.beginPath();
+                            ctx.arc(x, y - 12, 4, 0, 2 * Math.PI);
+                            ctx.fillStyle = 'var(--gauge-start-color, #ffd400)';
+                            ctx.fill(); ctx.restore();
+                        }
+                    });
+                });
+            }
+        };
+
+function createChart(canvasId, label, data, customScaleOptions = {}) {
+    if (allCharts[canvasId]) {
+        allCharts[canvasId].destroy();
+    }
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    
+    // 다크모드 여부 확인
+    const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // 다크모드에 따라 다른 색상 변수 설정
+    const lineColor = isDarkMode ? '#888888' : '#7FE89B';
+    const bubbleBgColor = isDarkMode ? '#2a2a2a' : '#E1FDC5';
+    const gridColor = isDarkMode ? '#333' : '#f0f0f0';
+    const textColor = isDarkMode ? '#e0e0e0' : '#333';
+    const textLightColor = isDarkMode ? '#888' : '#777'; // 연한 회색
+
+    const chartData = (data || []).filter(d => d && typeof d.value === 'number' && !isNaN(d.value)).map(d => ({ x: d.date, y: d.value, createdAt: d.createdAt }));
+
+    allCharts[canvasId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: label,
+                data: chartData,
+                borderColor: lineColor,
+                borderWidth: 2.5,
+                tension: 0.2,
+                pointRadius: 4,
+                pointBackgroundColor: lineColor,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'time',
+                    time: { unit: 'day', tooltipFormat: 'yyyy-MM-dd', displayFormats: { day: 'MM/dd' } },
+                    grid: { color: gridColor },
+                    ticks: { color: textColor }
+                },
+                y: {
+                    beginAtZero: false,
+                    grid: { color: gridColor },
+                    ticks: { color: textColor, font: { weight: 'bold' } },
+                    ...customScaleOptions
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } },
+                tooltip: {
+                    enabled: true,
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: bubbleBgColor,
+                    padding: 12,
+                    cornerRadius: 8,
+                    
+                    // [핵심 수정] 이 옵션 하나로 네모 상자를 완전히 제거합니다.
+                    displayColors: false,
+
+                    // --- 폰트 및 색상 스타일 ---
+                    titleFont: { weight: 'normal', size: 13 },
+                    titleColor: textLightColor,
+                    
+                    bodyFont: { weight: 'bold', size: 14 },
+                    bodyColor: textColor,
+
+                    footerFont: { weight: 'normal', size: 12 },
+                    footerColor: textLightColor,
+                    
+                    callbacks: {
+                        title: (tooltipItems) => new Date(tooltipItems[0].parsed.x).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }),
+                        label: (context) => `${context.dataset.label}: ${context.parsed.y}`,
+                        footer: (tooltipItems) => {
+                            const rawData = tooltipItems[0].raw;
+                            if (rawData.createdAt) return '기록 시간: ' + new Date(rawData.createdAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true });
+                            return '';
+                        }
+                    }
+                }
+            }
+        },
+        plugins: [newIconPlugin]
+    });
+}
+// [수정] 차트 렌더링 함수 (각 차트별 축 옵션 전달)
+function renderAllCharts() {
+    const range = dateRangeSelector.value;
+    const filterFn = (data) => {
+        if (range === 'all' || !data) return data;
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - parseInt(range));
+        return data.filter(d => d && d.date >= cutoffDate);
+    };
+
+    // [수정] 요청하신 y축 옵션을 명확하게 정의합니다.
+    const weightScaleOptions = {
+        max: 120,
+        ticks: { stepSize: 10 }
+    };
+    const bloodSugarScaleOptions = {
+        max: 300,
+        ticks: { stepSize: 10 }
+    };
+    const ketoneScaleOptions = {
+        max: 5,
+        ticks: { stepSize: 0.5 }
+    };
+
+
+            createChart('weightChart', '체중 (kg)', filterFn(allData.weight));
+            createChart('bloodSugarChart', '혈당 (mg/dL)', filterFn(allData.bloodSugar));
+            createChart('ketoneChart', '케톤 (mmol/L)', filterFn(allData.ketone));
+        }
+
+        // 6. 이벤트 핸들러 연결
+        let eventsWired = false;
+        function wireEventsOnce() {
+            if (eventsWired) return;
+            eventsWired = true;
+            homeBtn?.addEventListener('click', () => { window.location.href = 'fastmate.html'; });
+            logoutBtn?.addEventListener('click', () => { if (confirm('정말 로그아웃하시겠습니까?')) signOutUser(); });
+            fastingHistoryList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-btn')) {
+                    const li = e.target.closest('.history-item');
+                    if (li.dataset.docId) deleteFastingRecord(li.dataset.docId);
+                }
+            });
+            tabs.forEach(tab => tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(tab.dataset.tab + 'Content').classList.add('active');
+            }));
+            dateRangeSelector.addEventListener('change', renderAllCharts);
+        }
+
+        // 7. 메인 로직: 데이터 로딩 및 앱 초기화
+        async function loadAndRenderAllData() {
+            if (!currentUser) return;
+            try {
+                const [profile, fasting, exercise, weight, bloodSugar, ketone] = await Promise.all([
+                    getUserDoc(currentUser.uid),
+                    fetchHistory('fastingHistory', 'endTime'),
+                    fetchHistory('measurements/exercise/items'),
+                    fetchHistory('measurements/weight/items'),
+                    fetchHistory('measurements/bloodSugar/items'),
+                    fetchHistory('measurements/ketone/items')
+                ]);
+                
+                allData = { profile, fasting, exercise, weight, bloodSugar, ketone };
+
+                renderProfileCard();
+                renderFastingHistory();
+                renderExerciseHistory();
+                renderAllCharts();
+                
+                wireEventsOnce();
+            } catch (error) { console.error("마이페이지 데이터 로딩 중 오류:", error); }
+        }
+
+        // 8. 최종 실행 지점: 인증 상태 리스너
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadAndRenderAllData();
+            }
+        });
+    });
+    </script>
+</body>
+</html>

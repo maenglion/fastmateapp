@@ -1,0 +1,21 @@
+{
+  "id": "/?app=fastmate",
+  "name": "Fastmate: 간헐적 단식 타이머",
+  "short_name": "Fastmate",
+  "description": "간헐적 단식 타이머 · 케톤 · 혈당 · 체중 기록 앱",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1c8e3e",
+  "lang": "ko-KR",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "단식 시작/종료", "short_name": "단식", "url": "/fastmate.html#fast" },
+    { "name": "기록하기", "short_name": "기록", "url": "/fastmate.html#log" }
+  ]
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>fastmate</title>
+
+  <!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script defer src="/firebase-init.js?v=2025.09.06-v8"></script>
+
+
+ <link rel="manifest" href="/manifest.json?v=2025-09-06">
+  <link rel="stylesheet" href="/styles.css" />
+
+  <style>
+    /* 첫 로드 시 일단 숨김(Transition용) */
+    .intro-container {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity .3s ease-in-out;
+    }
+    .intro-container.show {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="intro-container">
+    <h1 class="logo">fastmate</h1>
+    <p class="intro-text">단식을<br>쉽게 관리하세요.</p>
+    <button onclick="location.assign('/signup.html')" class="main-button">시작하기</button>
+    <p class="login-link">
+      이미 회원이라면 <a href="/login.html">로그인</a>
+    </p>
+  </div>
+
+  <!-- JS가 아예 돌지 않아도 1.5초 내 노출되도록 안전복구 타이머 -->
+  <script>
+    window.__showFallback = setTimeout(() => {
+      document.querySelector('.intro-container')?.classList.add('show');
+    }, 1500);
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const intro = document.querySelector('.intro-container');
+
+      // path 이동은 항상 루트상대경로 사용(모든 origin에서 동작)
+      const go = (p) => location.assign(p.startsWith('/') ? p : '/' + p);
+
+      // onAuthStateChanged가 실패/지연되어도 화면은 열린 상태여야 함
+      try {
+        firebase.auth().onAuthStateChanged(
+          (user) => {
+            clearTimeout(window.__showFallback);
+            if (user) {
+              go('/fastmate.html');    // 로그인 상태면 앱으로
+            } else {
+              intro?.classList.add('show'); // 비로그인은 인트로 노출
+            }
+          },
+          (err) => {
+            console.error('[auth listener error]', err);
+            intro?.classList.add('show');   // 에러여도 보여준다
+          }
+        );
+      } catch (e) {
+        console.error('[auth listener exception]', e);
+        intro?.classList.add('show');       // 예외여도 보여준다
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(console.error);
+  });
+}
+  </script>
+
+</body>
+</html>

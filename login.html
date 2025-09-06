@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fastmate - 로그인</title>
+    
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json?v=2025-09-06">
+
+    <link rel="stylesheet" href="./styles.css">
+
+
+
+    <style>
+        /* login.html 전용 스타일 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            box-sizing: border-box;
+            margin: 20px;
+        }
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1c8e3e;
+            margin: 0 0 15px 0;
+        }
+        .login-subtitle {
+            font-size: 1rem;
+            color: #777;
+            margin: 0 0 30px 0;
+        }
+        .input-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #1c8e3e;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .forgot-password {
+            display: block;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #555;
+            text-decoration: none;
+        }
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #aaa;
+            margin: 30px 0;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+        .google-login-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #ffffff;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+        }
+        .google-login-btn svg { width: 20px; height: 20px; }
+    </style>
+</head>
+<body>
+    <main class="login-container">
+        <h1 class="login-title">Fastmate</h1>
+        <p class="login-subtitle">관리하는 단식의 시작</p>
+
+        <div class="input-group">
+            <label for="email">이메일</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="input-group">
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <button class="login-btn" type="button">로그인</button>
+        
+        <a href="/forgot-password.html" class="forgot-password">비밀번호를 잊으셨나요?</a>
+
+        <div class="divider">OR</div>
+
+        <button id="google-login-btn" class="google-login-btn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 533.5 544.3" width="20" height="20">
+                <path fill="#4285F4" d="M533.5 278.4c0-17.4-1.6-34-4.7-50.1H272v95h147.5c-6.3 34-25 62.8-53.6 82.1v68h86.7c50.7-46.7 80.9-115.5 80.9-195z"/>
+                <path fill="#34A853" d="M272 544.3c72.6 0 133.7-24 178.3-65.3l-86.7-68c-24 16-54.6 25.5-91.6 25.5-70.5 0-130.2-47.6-151.6-111.4H32.9v69.8C77.7 482.5 168.2 544.3 272 544.3z"/>
+                <path fill="#FBBC05" d="M120.4 325.1c-4.9-16-7.7-32.9-7.7-50.1s2.8-34.1 7.7-50.1V155H32.9C11.7 196.7 0 244.3 0 294.9s11.7 98.2 32.9 139.9l87.5-69.7z"/>
+                <path fill="#EA4335" d="M272 108.6c39.5 0 75.1 13.6 103.1 40.3l77.4-77.4C405.7 24.2 344.6 0 272 0 168.2 0 77.7 61.8 32.9 155l87.5 69.9c21.4-63.8 81.1-111.3 151.6-111.3z"/>
+            </svg>
+            <span>Google로 로그인</span>
+        </button>
+        </main>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script defer src="/firebase-init.js?v=2025.09.06-v8"></script>
+
+
+</body>
+</html>
